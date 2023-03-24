@@ -39,8 +39,9 @@ export class UploadMediaStack extends cdk.Stack {
       timeout: Duration.minutes(1)
     });
 
-    const lamndaIntegration = new apigateway.LambdaIntegration(lambdaFn);
+    bucket.grantPut(lambdaFn);
 
+    const lamndaIntegration = new apigateway.LambdaIntegration(lambdaFn);
     const api = new apigateway.RestApi(this, apiName);
 
     api.root.addMethod('ANY');
