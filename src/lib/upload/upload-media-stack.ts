@@ -13,10 +13,11 @@ export class UploadMediaStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props?: cdk.StackProps) {
     super(scope, id, props);
 
-    const bucketName = 'upload-media';
-    const topicName = 'upload-media-topic';
-    const lambdaUploadFunctionName = 'uploadToS3';
-    const apiName = 'uploadApi';
+    const bucketName = 'bucket';
+    const topicName = 'fileUploadedTopic';
+    const uploadContentFunctionName = 'uploadFunction';
+    const createUploadDetailsFunctionName = 'createUploadDetailsFunction';
+    const apiName = 'api';
 
     const bucket = new Bucket(this, bucketName, {      
       removalPolicy: cdk.RemovalPolicy.DESTROY,
@@ -29,7 +30,7 @@ export class UploadMediaStack extends cdk.Stack {
 
     bucket.addEventNotification(EventType.OBJECT_CREATED, new SnsDestination(topic))
 
-    const lambdaFn = new lambda.Function(this, lambdaUploadFunctionName, {
+    const uploadContentFunction = new lambda.Function(this, uploadContentFunctionName, {
       runtime: lambda.Runtime.PYTHON_3_8,
       handler: 'upload_function.handler',
       code: lambda.Code.fromAsset(path.join(__dirname, '../../backend/upload')),
@@ -39,15 +40,25 @@ export class UploadMediaStack extends cdk.Stack {
       timeout: Duration.minutes(1)
     });
 
-    bucket.grantPut(lambdaFn);
+    const createUploadDetailsFunction = new lambda.Function(this, createUploadDetailsFunctionName, {
+      runtime: lambda.Runtime.PYTHON_3_8,
+      handler: 'create_upload_details.handler',
+      code: lambda.Code.fromAsset(path.join(__dirname, '../../backend/upload'))      
+    });
 
-    const lamndaIntegration = new apigateway.LambdaIntegration(lambdaFn);
+    bucket.grantPut(uploadContentFunction);
+    
     const api = new apigateway.RestApi(this, apiName);
 
     api.root.addMethod('ANY');
 
     const invoices = api.root.addResource('invoices');
-    const uploadInvoice = invoices.addResource('upload');
-    uploadInvoice.addMethod('POST', lamndaIntegration);
+    const uploadFileContentResource = invoices.addResource('upload');
+    const uploadIdResource = uploadFileContentResource.addResource('{uploadId}')
+    uploadIdResource.addMethod('POST', new apigateway.LambdaIntegration(uploadContentFunction));
+    uploadFileContentResource.addMethod('PUT', new apigateway.LambdaIntegration(createUploadDetailsFunction));
+
+
+    // const createUploadDetailsResource = invoices.addResource('upload');
   }  
 }
