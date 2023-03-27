@@ -7,7 +7,7 @@ import * as lambda from 'aws-cdk-lib/aws-lambda';
 import * as apigateway from 'aws-cdk-lib/aws-apigateway';
 import path = require('path');
 import { Duration } from 'aws-cdk-lib';
-import { Timeout } from 'aws-cdk-lib/aws-stepfunctions';
+import * as dynamodb from 'aws-cdk-lib/aws-dynamodb';
 
 export class UploadMediaStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props?: cdk.StackProps) {
@@ -19,12 +19,12 @@ export class UploadMediaStack extends cdk.Stack {
     const createUploadDetailsFunctionName = 'createUploadDetailsFunction';
     const apiName = 'api';
 
-    const bucket = new Bucket(this, bucketName, {      
+    const bucket = new Bucket(this, bucketName, {
       removalPolicy: cdk.RemovalPolicy.DESTROY,
       autoDeleteObjects: true,
       versioned: true,
       blockPublicAccess: BlockPublicAccess.BLOCK_ALL
-    });    
+    });
 
     const topic = new Topic(this, topicName);
 
@@ -40,16 +40,26 @@ export class UploadMediaStack extends cdk.Stack {
       timeout: Duration.minutes(1)
     });
 
-    const createUploadDetailsFunction = new lambda.Function(this, createUploadDetailsFunctionName, {
-      runtime: lambda.Runtime.PYTHON_3_8,
-      handler: 'create_upload_details.handler',
-      code: lambda.Code.fromAsset(path.join(__dirname, '../../backend/upload'))      
+    const uploadTable = new dynamodb.Table(this, 'uploadTable', {
+      partitionKey: { name: 'id', type: dynamodb.AttributeType.STRING },
+      billingMode: dynamodb.BillingMode.PAY_PER_REQUEST
     });
 
     bucket.grantPut(uploadContentFunction);
-    
-    const api = new apigateway.RestApi(this, apiName);
 
+    const createUploadDetailsFunction = new lambda.Function(this, createUploadDetailsFunctionName, {
+      runtime: lambda.Runtime.PYTHON_3_8,
+      handler: 'create_upload_details.handler',
+      code: lambda.Code.fromAsset(path.join(__dirname, '../../backend/upload')),
+      environment: {
+        TABLE_NAME: uploadTable.tableName
+      }
+    });
+
+    uploadTable.grantReadWriteData(createUploadDetailsFunction);
+
+
+    const api = new apigateway.RestApi(this, apiName);
     api.root.addMethod('ANY');
 
     const invoices = api.root.addResource('invoices');
@@ -59,6 +69,7 @@ export class UploadMediaStack extends cdk.Stack {
     uploadFileContentResource.addMethod('PUT', new apigateway.LambdaIntegration(createUploadDetailsFunction));
 
 
-    // const createUploadDetailsResource = invoices.addResource('upload');
-  }  
+    new cdk.CfnOutput(this, 'UploadTable', { value: uploadTable.tableName });
+    new cdk.CfnOutput(this, 'Api', { value: api.url });
+  }
 }
