@@ -30,22 +30,25 @@ export class UploadMediaStack extends cdk.Stack {
 
     bucket.addEventNotification(EventType.OBJECT_CREATED, new SnsDestination(topic))
 
-    const uploadContentFunction = new lambda.Function(this, uploadContentFunctionName, {
-      runtime: lambda.Runtime.PYTHON_3_8,
-      handler: 'upload_function.handler',
-      code: lambda.Code.fromAsset(path.join(__dirname, '../../backend/upload')),
-      environment: {
-        BUCKET_NAME: bucket.bucketName
-      },
-      timeout: Duration.minutes(1)
-    });
-
     const uploadTable = new dynamodb.Table(this, 'uploadTable', {
       partitionKey: { name: 'id', type: dynamodb.AttributeType.STRING },
       billingMode: dynamodb.BillingMode.PAY_PER_REQUEST
     });
 
+    const uploadContentFunction = new lambda.Function(this, uploadContentFunctionName, {
+      runtime: lambda.Runtime.PYTHON_3_8,
+      handler: 'upload_function.handler',
+      code: lambda.Code.fromAsset(path.join(__dirname, '../../backend/upload')),
+      environment: {
+        BUCKET_NAME: bucket.bucketName,
+        TABLE_NAME: uploadTable.tableName
+      },
+      timeout: Duration.minutes(1)
+    });   
+
     bucket.grantPut(uploadContentFunction);
+    uploadTable.grantReadData(uploadContentFunction);
+
 
     const createUploadDetailsFunction = new lambda.Function(this, createUploadDetailsFunctionName, {
       runtime: lambda.Runtime.PYTHON_3_8,
