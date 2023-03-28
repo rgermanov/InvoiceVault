@@ -62,7 +62,9 @@ export class UploadMediaStack extends cdk.Stack {
     uploadTable.grantReadWriteData(createUploadDetailsFunction);
 
 
-    const api = new apigateway.RestApi(this, apiName);
+    const api = new apigateway.RestApi(this, apiName, {
+      binaryMediaTypes: ['application/pdf', 'image/jpg', 'image/png']
+    });
     api.root.addMethod('ANY');
 
     const invoices = api.root.addResource('invoices');

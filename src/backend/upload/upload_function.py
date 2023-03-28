@@ -2,6 +2,7 @@ import os
 import logging
 import boto3
 import json
+import base64
 from boto3.dynamodb.types import TypeDeserializer
 
 logger = logging.getLogger()
@@ -31,7 +32,7 @@ def handler(event, context):
         logger.info(upload_details)
 
         # get upload content
-        file_content = bytes(event['body'], 'utf-8')
+        file_content = base64.b64decode(event['body'])
 
         # upload
         response = s3.put_object(
