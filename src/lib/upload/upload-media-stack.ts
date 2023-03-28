@@ -1,7 +1,7 @@
 import * as cdk from 'aws-cdk-lib';
 import { Construct } from 'constructs';
 import { BlockPublicAccess, Bucket, EventType } from 'aws-cdk-lib/aws-s3';
-import { Topic } from 'aws-cdk-lib/aws-sns';
+import { ITopic, Topic } from 'aws-cdk-lib/aws-sns';
 import { SnsDestination } from 'aws-cdk-lib/aws-s3-notifications';
 import * as lambda from 'aws-cdk-lib/aws-lambda';
 import * as apigateway from 'aws-cdk-lib/aws-apigateway';
@@ -10,6 +10,9 @@ import { Duration } from 'aws-cdk-lib';
 import * as dynamodb from 'aws-cdk-lib/aws-dynamodb';
 
 export class UploadMediaStack extends cdk.Stack {
+  
+  public topic: ITopic;
+
   constructor(scope: Construct, id: string, props?: cdk.StackProps) {
     super(scope, id, props);
 
@@ -26,9 +29,9 @@ export class UploadMediaStack extends cdk.Stack {
       blockPublicAccess: BlockPublicAccess.BLOCK_ALL
     });
 
-    const topic = new Topic(this, topicName);
+    this.topic = new Topic(this, topicName);
 
-    bucket.addEventNotification(EventType.OBJECT_CREATED, new SnsDestination(topic))
+    bucket.addEventNotification(EventType.OBJECT_CREATED, new SnsDestination(this.topic))
 
     const uploadTable = new dynamodb.Table(this, 'uploadTable', {
       partitionKey: { name: 'id', type: dynamodb.AttributeType.STRING },
