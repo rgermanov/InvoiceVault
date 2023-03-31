@@ -8,6 +8,8 @@ import { IBucket } from 'aws-cdk-lib/aws-s3';
 import * as dynamodb from 'aws-cdk-lib/aws-dynamodb';
 import * as iam from 'aws-cdk-lib/aws-iam';
 import { Duration } from 'aws-cdk-lib';
+import * as apigateway from 'aws-cdk-lib/aws-apigateway';
+import * as nodejslambda from 'aws-cdk-lib/aws-lambda-nodejs';
 
 export class AnalyzeMediaStack extends cdk.Stack {
     constructor(
@@ -45,5 +47,39 @@ export class AnalyzeMediaStack extends cdk.Stack {
         uploadMediaTopic.addSubscription(new subscriptions.LambdaSubscription(analyzeFunction));
         analyzeTable.grantReadWriteData(analyzeFunction);
         bucket.grantRead(analyzeFunction);
+
+        
+        var getInvoiceFunction = new nodejslambda.NodejsFunction(this, 'GetInvoiceFunction', {
+            runtime: lambda.Runtime.NODEJS_16_X,
+            entry: path.join(__dirname, '../../backend/analyze/api_get_invoices.js'),
+            handler: 'handler',
+            environment: {                
+                TABLE_NAME: analyzeTable.tableName
+            },
+            bundling: {
+                nodeModules: ['dynamodb-data-types']
+                // externalModules: ['dynamodb-data-types']
+            }
+        });
+        // var getInvoiceFunction = new lambda.Function(this, 'GetInvoiceFunction', {
+        //     runtime: lambda.Runtime.NODEJS_16_X,
+        //     handler: 'api_get_invoices.handler',
+        //     code: lambda.Code.fromAsset(path.join(__dirname, '../../backend/analyze')),
+        //     environment: {                
+        //         TABLE_NAME: analyzeTable.tableName
+        //     },            
+        // });
+
+        analyzeTable.grantReadData(getInvoiceFunction);
+
+        const api = new apigateway.RestApi(this, 'api');
+        api.root.addMethod('ANY');
+    
+        const invoices = api.root.addResource('invoices');
+        invoices.addMethod('GET');
+        const getInvoicesResource = invoices.addResource('{invoiceId}');
+        getInvoicesResource.addMethod('GET', new apigateway.LambdaIntegration(getInvoiceFunction));        
+            
+        new cdk.CfnOutput(this, 'Api', { value: api.url });
     }
 }
