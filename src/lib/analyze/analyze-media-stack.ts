@@ -57,18 +57,9 @@ export class AnalyzeMediaStack extends cdk.Stack {
                 TABLE_NAME: analyzeTable.tableName
             },
             bundling: {
-                nodeModules: ['dynamodb-data-types']
-                // externalModules: ['dynamodb-data-types']
+                nodeModules: ['dynamodb-data-types']                
             }
         });
-        // var getInvoiceFunction = new lambda.Function(this, 'GetInvoiceFunction', {
-        //     runtime: lambda.Runtime.NODEJS_16_X,
-        //     handler: 'api_get_invoices.handler',
-        //     code: lambda.Code.fromAsset(path.join(__dirname, '../../backend/analyze')),
-        //     environment: {                
-        //         TABLE_NAME: analyzeTable.tableName
-        //     },            
-        // });
 
         analyzeTable.grantReadData(getInvoiceFunction);
 
