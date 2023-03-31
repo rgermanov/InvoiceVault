@@ -8,4 +8,8 @@ const app = new cdk.App();
 
 const uploadStack = new UploadMediaStack(app, 'Fraplo-InvoiceVault-UploadMedia');
 
-const analyzeStack = new AnalyzeMediaStack(app, 'Fraplo-InvoiceVault-AnalyzeMedia', uploadStack.topic);
+const analyzeStack = new AnalyzeMediaStack(
+    app, 
+    'Fraplo-InvoiceVault-AnalyzeMedia', 
+    uploadStack.topic,
+    uploadStack.bucket);

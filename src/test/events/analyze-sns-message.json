@@ -1,0 +1,24 @@
+{
+    "Records":[
+       {
+          "EventSource":"aws:sns",
+          "EventVersion":"1.0",
+          "EventSubscriptionArn":"arn:aws:sns:eu-central-1:737723105079:Fraplo-InvoiceVault-UploadMedia-fileUploadedTopic413EC9ED-uYMvZaQsFU3W:dc4f5791-3681-4765-887f-31621f157e63",
+          "Sns":{
+             "Type":"Notification",
+             "MessageId":"7282c69c-9e34-567b-b727-9a033f9a1bea",
+             "TopicArn":"arn:aws:sns:eu-central-1:737723105079:Fraplo-InvoiceVault-UploadMedia-fileUploadedTopic413EC9ED-uYMvZaQsFU3W",
+             "Subject":"Amazon S3 Notification",
+             "Message":"{\"Records\":[{\"eventVersion\":\"2.1\",\"eventSource\":\"aws:s3\",\"awsRegion\":\"eu-central-1\",\"eventTime\":\"2023-03-30T14:40:33.532Z\",\"eventName\":\"ObjectCreated:Put\",\"userIdentity\":{\"principalId\":\"AWS:AROA2XQ5ZH436GGGWIAYQ:Fraplo-InvoiceVault-UploadM-uploadFunction588C3DB1-851Z59ST7F9i\"},\"requestParameters\":{\"sourceIPAddress\":\"3.73.73.64\"},\"responseElements\":{\"x-amz-request-id\":\"SQQ72H7Q9SEM21E9\",\"x-amz-id-2\":\"emiS1DdtXnjdRzvLe4cXGIWA8yEjnTquBacZBj17ZT9W+ysY/6/6HDYz9ky61f2ytQaCI9Ulbe35WEtHrUCYp6gVj5GSwGi8\"},\"s3\":{\"s3SchemaVersion\":\"1.0\",\"configurationId\":\"ZmYwNjM3MDgtYjVlNS00NmE2LWIwZWMtMzhhNDQwYmQyNGY0\",\"bucket\":{\"name\":\"fraplo-invoicevault-uploadmedia-bucket43879c71-7fnk1q4zsu47\",\"ownerIdentity\":{\"principalId\":\"A2LZAC7H7M0WV1\"},\"arn\":\"arn:aws:s3:::fraplo-invoicevault-uploadmedia-bucket43879c71-7fnk1q4zsu47\"},\"object\":{\"key\":\"0ee36e8a-9de5-4fcf-b56e-5f5841123bf9\",\"size\":26295,\"eTag\":\"49d4be7694a020561956fc5b9ad216e9\",\"versionId\":\"Yp.btPEoh9013FVXl__tppoEqQbEoGkd\",\"sequencer\":\"0064259F6174249541\"}}}]}",
+             "Timestamp":"2023-03-30T14:40:46.565Z",
+             "SignatureVersion":"1",
+             "Signature":"haBr0OTjzv+c5bwPmvZGQGqHAEneC8G3UZEkWSirI1A+GUQIdsa8c99tEw1ptTbAbsyAD+VS7t1/hxb+S0AA5NT6lT/zKweWAtkt/wDcrhsOaOecXeU9P1LJzgVKnGWN7jhiWwSA6IO5DR/IGvcvz/ocJNFfvIkZqSSZ/TfCEc2JIIKVrlZOWb/Gie98Z+Kmn4Jo1XRu2iDH1nGTmJqK9awIj570kKw3AA6wreES7tQ/vSYUjGReTWxBic70zV1cMIY/ZHECpq/v8v4dMsvaJUaGS2kESuD+mBmehZhNfujDEncHh4079BjSZ98hZiQNOc7bQ0j2PqLRLMCOIQYNAw==",
+             "SigningCertUrl":"https://sns.eu-central-1.amazonaws.com/SimpleNotificationService-56e67fcb41f6fec09b0196692625d385.pem",
+             "UnsubscribeUrl":"https://sns.eu-central-1.amazonaws.com/?Action=Unsubscribe&SubscriptionArn=arn:aws:sns:eu-central-1:737723105079:Fraplo-InvoiceVault-UploadMedia-fileUploadedTopic413EC9ED-uYMvZaQsFU3W:dc4f5791-3681-4765-887f-31621f157e63",
+             "MessageAttributes":{
+                
+             }
+          }
+       }
+    ]
+ }

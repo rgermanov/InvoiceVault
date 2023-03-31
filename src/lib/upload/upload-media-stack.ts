@@ -1,6 +1,6 @@
 import * as cdk from 'aws-cdk-lib';
 import { Construct } from 'constructs';
-import { BlockPublicAccess, Bucket, EventType } from 'aws-cdk-lib/aws-s3';
+import { BlockPublicAccess, Bucket, EventType, IBucket } from 'aws-cdk-lib/aws-s3';
 import { ITopic, Topic } from 'aws-cdk-lib/aws-sns';
 import { SnsDestination } from 'aws-cdk-lib/aws-s3-notifications';
 import * as lambda from 'aws-cdk-lib/aws-lambda';
@@ -13,6 +13,8 @@ export class UploadMediaStack extends cdk.Stack {
   
   public topic: ITopic;
 
+  public bucket: IBucket;
+
   constructor(scope: Construct, id: string, props?: cdk.StackProps) {
     super(scope, id, props);
 
@@ -22,7 +24,7 @@ export class UploadMediaStack extends cdk.Stack {
     const createUploadDetailsFunctionName = 'createUploadDetailsFunction';
     const apiName = 'api';
 
-    const bucket = new Bucket(this, bucketName, {
+    this.bucket = new Bucket(this, bucketName, {
       removalPolicy: cdk.RemovalPolicy.DESTROY,
       autoDeleteObjects: true,
       versioned: true,
@@ -31,7 +33,7 @@ export class UploadMediaStack extends cdk.Stack {
 
     this.topic = new Topic(this, topicName);
 
-    bucket.addEventNotification(EventType.OBJECT_CREATED, new SnsDestination(this.topic))
+    this.bucket.addEventNotification(EventType.OBJECT_CREATED, new SnsDestination(this.topic))
 
     const uploadTable = new dynamodb.Table(this, 'uploadTable', {
       partitionKey: { name: 'id', type: dynamodb.AttributeType.STRING },
@@ -43,13 +45,13 @@ export class UploadMediaStack extends cdk.Stack {
       handler: 'upload_function.handler',
       code: lambda.Code.fromAsset(path.join(__dirname, '../../backend/upload')),
       environment: {
-        BUCKET_NAME: bucket.bucketName,
+        BUCKET_NAME: this.bucket.bucketName,
         TABLE_NAME: uploadTable.tableName
       },
       timeout: Duration.minutes(1)
     });   
 
-    bucket.grantPut(uploadContentFunction);
+    this.bucket.grantPut(uploadContentFunction);
     uploadTable.grantReadData(uploadContentFunction);
 
 
