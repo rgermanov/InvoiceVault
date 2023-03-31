@@ -49,27 +49,34 @@ export class AnalyzeMediaStack extends cdk.Stack {
         bucket.grantRead(analyzeFunction);
 
         
-        var getInvoiceFunction = new nodejslambda.NodejsFunction(this, 'GetInvoiceFunction', {
+        var getInvoiceByIdFunction = new nodejslambda.NodejsFunction(this, 'GetInvoiceByIdFunction', {
             runtime: lambda.Runtime.NODEJS_16_X,
-            entry: path.join(__dirname, '../../backend/analyze/api_get_invoices.js'),
+            entry: path.join(__dirname, '../../backend/analyze/api_get_invoice_by_id.js'),
             handler: 'handler',
             environment: {                
                 TABLE_NAME: analyzeTable.tableName
-            },
-            bundling: {
-                nodeModules: ['dynamodb-data-types']                
             }
         });
 
-        analyzeTable.grantReadData(getInvoiceFunction);
+        var getInvoicesFunction = new nodejslambda.NodejsFunction(this, 'GetInvoicesFunction',{
+            runtime: lambda.Runtime.NODEJS_16_X,
+            entry: path.join(__dirname, '../../backend/analyze/api_get_invoices.js'),
+            handler: 'handler',
+            environment: {
+                TABLE_NAME: analyzeTable.tableName
+            }
+        });
 
-        const api = new apigateway.RestApi(this, 'api');
-        api.root.addMethod('ANY');
+        analyzeTable.grantReadData(getInvoiceByIdFunction);
+        analyzeTable.grantReadData(getInvoicesFunction);
+
+        const api = new apigateway.RestApi(this, 'api');        
     
         const invoices = api.root.addResource('invoices');
-        invoices.addMethod('GET');
+        invoices.addMethod('GET', new apigateway.LambdaIntegration(getInvoicesFunction));
+
         const getInvoicesResource = invoices.addResource('{invoiceId}');
-        getInvoicesResource.addMethod('GET', new apigateway.LambdaIntegration(getInvoiceFunction));        
+        getInvoicesResource.addMethod('GET', new apigateway.LambdaIntegration(getInvoiceByIdFunction));        
             
         new cdk.CfnOutput(this, 'Api', { value: api.url });
     }
