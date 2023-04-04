@@ -14,10 +14,7 @@ export class FrontendStack extends cdk.Stack {
         oauthToken: SecretValue.secretsManager('dev/invoice-vault/github', {
           jsonField: 'invoice-vault-github-token'
         })
-      }),
-      // autoBranchCreation: {
-      //   patterns: ['main']
-      // }
+      })
     });
 
     const mainBranch = frontendApp.addBranch('main');
